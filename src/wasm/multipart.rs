@@ -97,8 +97,13 @@ impl Form {
         for (name, part) in self.inner.fields.iter() {
             let blob = part.blob()?;
 
-            if let Some(file_name) = &part.metadata().file_name {
-                form.append_with_blob_and_filename(name, &blob, &file_name)
+            if part.meta.mime == Some("text/plain".parse().unwrap()) {
+                form.append_with_str(
+                    name,
+                    std::str::from_utf8(part.value.as_bytes().unwrap()).unwrap(),
+                )
+            } else if let Some(file_name) = &part.metadata().file_name {
+                form.append_with_blob_and_filename(name, &blob, file_name)
             } else {
                 form.append_with_blob(name, &blob)
             }
